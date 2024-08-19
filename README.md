@@ -1,0 +1,3 @@
+# RayTracing
+
+一个简易的光线追踪渲染器，实现了PathTracing和WhittedTracing两种渲染方式
