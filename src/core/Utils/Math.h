@@ -642,7 +642,7 @@ namespace RT
 		while (len > 0) 
 		{
 			int half = len >> 1, middle = first + half;
-			// Bisect range based on value of _pred_ at _middle_
+			// 
 			if (pred(middle)) 
 			{
 				first = middle + 1;
@@ -691,13 +691,13 @@ namespace RT
 #define PCG32_DEFAULT_STREAM 0xda3e39cb94b95bdbULL
 #define PCG32_MULT 0x5851f42d4c957f2dULL
 
-	class ARng
+	class Rng
 	{
 	public:
 
-		ARng();
+		Rng();
 
-		ARng(uint64_t sequenceIndex) { setSequence(sequenceIndex); }
+		Rng(uint64_t sequenceIndex) { setSequence(sequenceIndex); }
 
 		void setSequence(uint64_t sequenceIndex);
 
@@ -745,7 +745,7 @@ namespace RT
 			state = acc_mult * state + acc_plus;
 		}
 
-		int64_t operator-(const ARng& other) const
+		int64_t operator-(const Rng& other) const
 		{
 			CHECK_EQ(inc, other.inc);
 			uint64_t cur_mult = PCG32_MULT, cur_plus = inc, cur_state = other.state,
@@ -769,9 +769,9 @@ namespace RT
 		uint64_t state, inc;
 	};
 
-	inline ARng::ARng() : state(PCG32_DEFAULT_STATE), inc(PCG32_DEFAULT_STREAM) {}
+	inline Rng::Rng() : state(PCG32_DEFAULT_STATE), inc(PCG32_DEFAULT_STREAM) {}
 
-	inline void ARng::setSequence(uint64_t initseq)
+	inline void Rng::setSequence(uint64_t initseq)
 	{
 		state = 0u;
 		inc = (initseq << 1u) | 1u;
@@ -780,7 +780,7 @@ namespace RT
 		uniformUInt32();
 	}
 
-	inline uint32_t ARng::uniformUInt32()
+	inline uint32_t Rng::uniformUInt32()
 	{
 		uint64_t oldstate = state;
 		state = oldstate * PCG32_MULT + inc;

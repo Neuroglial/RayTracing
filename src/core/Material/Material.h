@@ -18,9 +18,9 @@ namespace RT
 		virtual ~Material() = default;
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const = 0;
+			TransportMode mode, bool allowMultipleLobes) const = 0;
 
-		virtual AClassType getClassType() const override { return AClassType::AEMaterial; }
+		virtual ClassType getClassType() const override { return ClassType::AEMaterial; }
 
 	};
 

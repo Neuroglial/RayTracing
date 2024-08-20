@@ -17,7 +17,7 @@ namespace RT
 	}
 
 	void SurfaceInteraction::computeScatteringFunctions(const Ray &ray, MemoryArena &arena,
-		bool allowMultipleLobes, ATransportMode mode)
+		bool allowMultipleLobes, TransportMode mode)
 	{
 		hitable->computeScatteringFunctions(*this, arena, mode, allowMultipleLobes);
 	}

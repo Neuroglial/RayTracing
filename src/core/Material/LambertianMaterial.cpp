@@ -5,9 +5,9 @@
 
 namespace RT
 {
-	AURORA_REGISTER_CLASS(ALambertianMaterial, "Lambertian")
+	AURORA_REGISTER_CLASS(LambertianMaterial, "Lambertian")
 
-	ALambertianMaterial::ALambertianMaterial(const PropertyTreeNode &node)
+	LambertianMaterial::LambertianMaterial(const PropertyTreeNode &node)
 	{
 		const auto &props = node.getPropertyList();
 		Vec3f _kr = props.getVector3f("R");
@@ -16,14 +16,14 @@ namespace RT
 		activate();
 	}
 
-	void ALambertianMaterial::computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
-		ATransportMode mode, bool allowMultipleLobes) const
+	void LambertianMaterial::computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
+		TransportMode mode, bool allowMultipleLobes) const
 	{
 		si.bsdf = ARENA_ALLOC(arena, BSDF)(si);
 		Spectrum R = m_Kr;
 		if (!R.isBlack())
 		{
-			si.bsdf->add(ARENA_ALLOC(arena, ALambertianReflection)(R));
+			si.bsdf->add(ARENA_ALLOC(arena, LambertianReflection)(R));
 		}
 	}
 }

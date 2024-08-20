@@ -46,7 +46,7 @@ namespace RT
 		// used in this case.
 		virtual Float solidAngle(const Vec3f &p, int nSamples = 512) const;
 
-		virtual AClassType getClassType() const override { return AClassType::AEShape; }
+		virtual ClassType getClassType() const override { return ClassType::AEShape; }
 
 		Transform *m_objectToWorld = nullptr, *m_worldToObject = nullptr;
 	};

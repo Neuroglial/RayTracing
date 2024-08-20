@@ -39,7 +39,7 @@ namespace RT
 
 		int64_t getSamplingNumber() const { return samplesPerPixel; }
 
-		virtual AClassType getClassType() const override { return AClassType::AESampler; }
+		virtual ClassType getClassType() const override { return ClassType::AESampler; }
 
 		const int64_t samplesPerPixel; //Number of sampling per pixel
 
@@ -100,7 +100,8 @@ namespace RT
 		ARandomSampler(int ns, int seed = 0);
 
 		virtual void startPixel(const Vec2i&) override;
-
+		
+		//Ëæ»úÆ«ÒÆ
 		virtual Float get1D() override;
 		virtual Vec2f get2D() override;
 
@@ -109,6 +110,6 @@ namespace RT
 		virtual std::string toString() const override { return "RandomSampler[]"; }
 
 	private:
-		ARng m_rng; //Random number generator
+		Rng m_rng; //Random number generator
 	};
 }

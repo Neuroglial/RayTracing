@@ -20,7 +20,7 @@ namespace RT
 
 		Film(const PropertyTreeNode &node);
 		Film(const Vec2i &resolution, const BBox2f &cropWindow,
-			std::unique_ptr<AFilter> filter, const std::string &filename, Float diagonal = 35.f,
+			std::unique_ptr<Filter> filter, const std::string &filename, Float diagonal = 35.f,
 			Float scale = 1.f, Float maxSampleLuminance = Infinity);
 
 		BBox2i getSampleBounds() const;
@@ -38,7 +38,7 @@ namespace RT
 
 		virtual void activate() override { initialize(); }
 
-		virtual AClassType getClassType() const override { return AClassType::AEFilm; }
+		virtual ClassType getClassType() const override { return ClassType::AEFilm; }
 		virtual std::string toString() const override { return "Film[]"; }
 
 	private:
@@ -48,9 +48,9 @@ namespace RT
 
 		//Note: XYZ is a display independent representation of color,
 		//      and this is why we choose to use XYZ color herein.
-		struct APixel 
+		struct Pixel 
 		{
-			APixel() 
+			Pixel() 
 			{ 
 				m_xyz[0] = m_xyz[1] = m_xyz[2] = m_filterWeightSum = 0; 
 			}
@@ -63,12 +63,12 @@ namespace RT
 
 		Vec2i m_resolution; //(width, height)
 		std::string m_filename;
-		std::unique_ptr<APixel[]> m_pixels;
+		std::unique_ptr<Pixel[]> m_pixels;
 
 		Float m_diagonal;
 		BBox2i m_croppedPixelBounds;	//actual rendering window
 
-		std::unique_ptr<AFilter> m_filter;
+		std::unique_ptr<Filter> m_filter;
 		std::mutex m_mutex;
 
 		//Note: precomputed filter weights table
@@ -78,7 +78,7 @@ namespace RT
 		Float m_scale;
 		Float m_maxSampleLuminance;
 
-		APixel &getPixel(const Vec2i &p)
+		Pixel &getPixel(const Vec2i &p)
 		{
 			CHECK(insideExclusive(p, m_croppedPixelBounds));
 			int width = m_croppedPixelBounds.m_pMax.x - m_croppedPixelBounds.m_pMin.x;
@@ -88,7 +88,7 @@ namespace RT
 
 	};
 
-	struct AFilmTilePixel
+	struct FilmTilePixel
 	{
 		Spectrum m_contribSum = 0.f;		//sum of the weighted spectrum contributions
 		Float m_filterWeightSum = 0.f;		//sum of the filter weights
@@ -105,24 +105,25 @@ namespace RT
 			m_filterTable(filterTable), m_filterTableSize(filterTableSize),
 			m_maxSampleLuminance(maxSampleLuminance) 
 		{
-			m_pixels = std::vector<AFilmTilePixel>(glm::max(0, pixelBounds.area()));
+			m_pixels = std::vector<FilmTilePixel>(glm::max(0, pixelBounds.area()));
 		}
 
 		void addSample(const Vec2f &pFilm, Spectrum L, Float sampleWeight = 1.f) 
 		{
-			if (L.y() > m_maxSampleLuminance)
-				L *= m_maxSampleLuminance / L.y();
+			//限制最大亮度
+			if (L.luminance() > m_maxSampleLuminance)
+				L *= m_maxSampleLuminance / L.luminance();
 
-			// Compute sample's raster bounds
+			// 计算样本的光栅边界，p0，p1为当前过滤器下该采样点影响的范围
 			Vec2f pFilmDiscrete = pFilm - Vec2f(0.5f, 0.5f);
 			Vec2i p0 = (Vec2i)ceil(pFilmDiscrete - m_filterRadius);
 			Vec2i p1 = (Vec2i)floor(pFilmDiscrete + m_filterRadius) + Vec2i(1, 1);
 			p0 = max(p0, m_pixelBounds.m_pMin);
 			p1 = min(p1, m_pixelBounds.m_pMax);
 
-			// Loop over filter support and add sample to pixel arrays
+			// 循环过滤器并向像素阵列添加样本
 
-			// Precompute $x$ and $y$ filter table offsets
+			// 预计算在过滤表中的偏移量
 			int *ifx = ALLOCA(int, p1.x - p0.x);
 			for (int x = p0.x; x < p1.x; ++x) 
 			{
@@ -141,19 +142,19 @@ namespace RT
 			{
 				for (int x = p0.x; x < p1.x; ++x) 
 				{
-					// Evaluate filter value at $(x,y)$ pixel
+					// 在（x，y）像素处计算滤波器值
 					int offset = ify[y - p0.y] * m_filterTableSize + ifx[x - p0.x];
 					Float filterWeight = m_filterTable[offset];
 
-					// Update pixel values with filtered sample contribution
-					AFilmTilePixel &pixel = getPixel(Vec2i(x, y));
+					// 使用过滤后的样本贡献更新像素值
+					FilmTilePixel &pixel = getPixel(Vec2i(x, y));
 					pixel.m_contribSum += L * sampleWeight * filterWeight;
 					pixel.m_filterWeightSum += filterWeight;
 				}
 			}
 		}
 
-		AFilmTilePixel &getPixel(const Vec2i &p) 
+		FilmTilePixel &getPixel(const Vec2i &p) 
 		{
 			CHECK(insideExclusive(p, m_pixelBounds));
 			int width = m_pixelBounds.m_pMax.x - m_pixelBounds.m_pMin.x;
@@ -161,7 +162,7 @@ namespace RT
 			return m_pixels[index];
 		}
 
-		const AFilmTilePixel &getPixel(const Vec2i &p) const 
+		const FilmTilePixel &getPixel(const Vec2i &p) const 
 		{
 			CHECK(insideExclusive(p, m_pixelBounds));
 			int width =m_pixelBounds.m_pMax.x - m_pixelBounds.m_pMin.x;
@@ -176,7 +177,7 @@ namespace RT
 		const Vec2f m_filterRadius, m_invFilterRadius;
 		const Float *m_filterTable;
 		const int m_filterTableSize;
-		std::vector<AFilmTilePixel> m_pixels;
+		std::vector<FilmTilePixel> m_pixels;
 		const Float m_maxSampleLuminance;
 		
 		friend class Film;

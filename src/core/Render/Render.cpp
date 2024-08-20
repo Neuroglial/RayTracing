@@ -17,21 +17,22 @@ namespace RT
 
 		auto &sampler = m_sampler;
 
-		// Compute number of tiles, _nTiles_, to use for parallel rendering
+		// 计算总的瓦片数量进行并行渲染
 		BBox2i sampleBounds = m_camera->m_film->getSampleBounds();
 		Vec2i sampleExtent = sampleBounds.diagonal();
+		//一个瓦片为16*16像素
 		constexpr int tileSize = 16;
 		Vec2i nTiles((sampleExtent.x + tileSize - 1) / tileSize, (sampleExtent.y + tileSize - 1) / tileSize);
 
 		AReporter reporter(nTiles.x * nTiles.y, "Rendering");
 
-	 	AParallelUtils::parallelFor((size_t)0, (size_t)(nTiles.x * nTiles.y), [&](const size_t &t)
+	 	ParallelUtils::parallelFor((size_t)0, (size_t)(nTiles.x * nTiles.y), [&](const size_t &t)
 		{
 			
 			Vec2i tile(t % nTiles.x, t / nTiles.x);
 			MemoryArena arena;
 
-			//新建一个采样器
+			//为每个线程新建一个采样器
 			int seed = t;
 			std::unique_ptr<Sampler> tileSampler = sampler->clone(seed);
 
@@ -42,57 +43,59 @@ namespace RT
 			int y1 = glm::min(y0 + tileSize, sampleBounds.m_pMax.y);
 			BBox2i tileBounds(Vec2i(x0, y0), Vec2i(x1, y1));
 
-			// 获取渲染的地方
+			// 获取渲染瓦片
 			std::unique_ptr<FilmTile> filmTile = m_camera->m_film->getFilmTile(tileBounds);
 
-			// Loop over pixels in tile to render them
+			// 逐像素遍历
 			for (Vec2i pixel : tileBounds)
 			{
+				//开始采样
 				tileSampler->startPixel(pixel);
 
 				do
 				{
-					// Initialize _CameraSample_ for current sample
+					// 为当前样本初始化CameraSample
 					CameraSample cameraSample = tileSampler->getCameraSample(pixel);
 
-					// Generate camera ray for current sample
+					// 生成当前点的射线，并计算权值
 					Ray ray;
 					Float rayWeight = m_camera->castingRay(cameraSample, ray);
 
-					// Evaluate radiance along camera ray
+					// 进行光线最总
 					Spectrum L(0.f);
 					if (rayWeight > 0)
 					{
 						L = Li(ray, scene, *tileSampler, arena);
 					}
 
-					// Issue warning if unexpected radiance value returned
+					// 处理异常返回
 					if (L.hasNaNs())
 					{
 						L = Spectrum(0.f);
 					}
-					else if (L.y() < -1e-5)
+					else if (L.luminance() < -1e-5)
 					{
 						L = Spectrum(0.f);
 					}
-					else if (std::isinf(L.y()))
+					else if (std::isinf(L.luminance()))
 					{
 						L = Spectrum(0.f);
 					}
 
-					// Add camera ray's contribution to image
+					// 将当前采样添加到film中
 					filmTile->addSample(cameraSample.pFilm, L, rayWeight);
 
-					// Free _MemoryArena_ memory from computing image sample value
+					// 从计算图像样本值中释放MemoryRena内存
 					arena.Reset();
 
+					//小于最大采样次数继续采样
 				} while (tileSampler->startNextSample());
 			}
 
 			m_camera->m_film->mergeFilmTile(std::move(filmTile));
 			reporter.update();
 			
-		}, AExecutionPolicy::APARALLEL);
+		}, ExecutionPolicy::APARALLEL);
 
 		reporter.done();
 
@@ -186,7 +189,7 @@ namespace RT
 	Spectrum uniformSampleOneLight(const Interaction &it, const Scene &scene,
 		MemoryArena &arena, Sampler &sampler, const Distribution1D *lightDistrib)
 	{
-		// Randomly choose a single light to sample, _light_
+		// 随机选择单个灯光进行采样
 		int nLights = int(scene.m_lights.size());
 
 		if (nLights == 0)
@@ -341,29 +344,33 @@ namespace RT
 		m_lightDistribution = createLightSampleDistribution(m_lightSampleStrategy, scene);
 	}
 
+
 	Spectrum PathRenderer::Li(const Ray& r, const Scene& scene, Sampler& sampler,
 		MemoryArena& arena, int depth) const
 	{
+		//初始化
 		Spectrum L(0.f), beta(1.f);
 		Ray ray(r);
 
+		//是否为镜面反射
 		bool specularBounce = false;
+		//反射次数
 		int bounces;
 
+		//折射比例
 		Float etaScale = 1;
 
 		for (bounces = 0;; ++bounces)
 		{
-			// Find next path vertex and accumulate contribution
+			// 查找下一个路径顶点并累积贡献
 
-			// Intersect _ray_ with scene and store intersection in _isect_
+			// 将ray与场景相交，并将相交点存储在isect中
 			SurfaceInteraction isect;
 			bool hit = scene.hit(ray, isect);
 
-			// Possibly add emitted light at intersection
 			if (bounces == 0 || specularBounce)
 			{
-				// Add emitted light at path vertex or from the environment
+				// 在路径顶点或环境中添加发射光
 				if (hit)
 				{
 					L += beta * isect.Le(-ray.direction());
@@ -375,18 +382,15 @@ namespace RT
 				}
 			}
 
-			// Terminate path if ray escaped or _maxDepth_ was reached
+			// 如果光线逃逸或达到maxDepth，则终止路径
 			if (!hit || bounces >= m_maxDepth)
 				break;
 
-			// Compute scattering functions and skip over medium boundaries
+			// 计算散射函数
 			isect.computeScatteringFunctions(ray, arena, true);
 
-			// Note: bsdf == nullptr indicates that the current surface has no effect on light,
-			//       and such surfaces are used to represent transitions between participating 
-			//		 media, whose boundaries are themselves optically inactive.
-			if (!isect.bsdf)
-			{
+			// bsdf==nullptr表示当前表面对光没有影响，这样的表面用于表示参与介质之间的过渡，其边界本身是光学非活动的。
+			if (!isect.bsdf){
 				ray = isect.spawnRay(ray.direction());
 				bounces--;
 				continue;
@@ -394,15 +398,11 @@ namespace RT
 
 			const Distribution1D* distrib = m_lightDistribution->lookup(isect.p);
 
-			// Sample illumination from lights to find path contribution.
-			// (But skip this for perfectly specular BSDFs.)
+			// 从灯光中采样照明以查找路径贡献。（但对于完全镜面反射的BSDF，跳过此步骤）
 			if (isect.bsdf->numComponents(ABxDFType(BSDF_ALL & ~BSDF_SPECULAR)) > 0)
 			{
-				//++totalPaths;
 				Spectrum Ld = beta * uniformSampleOneLight(isect, scene, arena, sampler, distrib);
-				//if (Ld.isBlack()) 
-				//	++zeroRadiancePaths;
-				CHECK_GE(Ld.y(), 0.f);
+				CHECK_GE(Ld.luminance(), 0.f);
 				L += Ld;
 			}
 
@@ -416,8 +416,8 @@ namespace RT
 				break;
 			beta *= f * absDot(wi, isect.n) / pdf;
 
-			CHECK_GE(beta.y(), 0.f);
-			DCHECK(!glm::isinf(beta.y()));
+			CHECK_GE(beta.luminance(), 0.f);
+			DCHECK(!glm::isinf(beta.luminance()));
 
 			specularBounce = (flags & BSDF_SPECULAR) != 0;
 			if ((flags & BSDF_SPECULAR) && (flags & BSDF_TRANSMISSION))
@@ -440,7 +440,7 @@ namespace RT
 				if (sampler.get1D() < q)
 					break;
 				beta /= 1 - q;
-				DCHECK(!glm::isinf(beta.y()));
+				DCHECK(!glm::isinf(beta.luminance()));
 			}
 		}
 

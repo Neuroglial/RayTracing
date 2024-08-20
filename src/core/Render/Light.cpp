@@ -53,10 +53,10 @@ namespace RT
 
 	//-------------------------------------------AAreaLight-------------------------------------
 
-	AreaLight::AreaLight(const PropertyList &props) : Light(props) { m_flags = (int)ALightFlags::ALightArea; }
+	AreaLight::AreaLight(const PropertyList &props) : Light(props) { m_flags = (int)LightFlags::ALightArea; }
 
 	AreaLight::AreaLight(const Transform &lightToWorld, int nSamples)
-		: Light((int)ALightFlags::ALightArea, lightToWorld, nSamples) { }
+		: Light((int)LightFlags::ALightArea, lightToWorld, nSamples) { }
 
 }
 
@@ -64,9 +64,9 @@ namespace RT
 {
 	//-------------------------------------------ADiffuseAreaLight-------------------------------------
 
-	AURORA_REGISTER_CLASS(ADiffuseAreaLight, "AreaDiffuse")
+	AURORA_REGISTER_CLASS(DiffuseAreaLight, "AreaDiffuse")
 
-		ADiffuseAreaLight::ADiffuseAreaLight(const PropertyTreeNode& node)
+		DiffuseAreaLight::DiffuseAreaLight(const PropertyTreeNode& node)
 		: AreaLight(node.getPropertyList()), m_shape(nullptr)
 	{
 		const auto& props = node.getPropertyList();
@@ -79,16 +79,16 @@ namespace RT
 		activate();
 	}
 
-	ADiffuseAreaLight::ADiffuseAreaLight(const Transform& lightToWorld, const Spectrum& Lemit,
+	DiffuseAreaLight::DiffuseAreaLight(const Transform& lightToWorld, const Spectrum& Lemit,
 		int nSamples, Shape* shape, bool twoSided)
 		: AreaLight(lightToWorld, nSamples), m_Lemit(Lemit), m_shape(shape),
 		m_twoSided(twoSided), m_area(shape->area()) { }
 
-	void ADiffuseAreaLight::setParent(Object* parent)
+	void DiffuseAreaLight::setParent(Object* parent)
 	{
 		switch (parent->getClassType())
 		{
-		case AClassType::AEHitable:
+		case ClassType::AEHitable:
 			m_shape = static_cast<HitableObject*>(parent)->getShape();
 			m_area = m_shape->area();
 			m_lightToWorld = *m_shape->m_objectToWorld;
@@ -101,12 +101,12 @@ namespace RT
 		}
 	}
 
-	Spectrum ADiffuseAreaLight::power() const
+	Spectrum DiffuseAreaLight::power() const
 	{
 		return (m_twoSided ? 2 : 1) * m_Lemit * m_area * Pi;
 	}
 
-	Spectrum ADiffuseAreaLight::sample_Li(const Interaction& ref, const Vec2f& u, Vec3f& wi,
+	Spectrum DiffuseAreaLight::sample_Li(const Interaction& ref, const Vec2f& u, Vec3f& wi,
 		Float& pdf, VisibilityTester& vis) const
 	{
 		Interaction pShape = m_shape->sample(ref, u, pdf);
@@ -122,12 +122,12 @@ namespace RT
 		return L(pShape, -wi);
 	}
 
-	Float ADiffuseAreaLight::pdf_Li(const Interaction& ref, const Vec3f& wi) const
+	Float DiffuseAreaLight::pdf_Li(const Interaction& ref, const Vec3f& wi) const
 	{
 		return m_shape->pdf(ref, wi);
 	}
 
-	Spectrum ADiffuseAreaLight::sample_Le(const Vec2f& u1, const Vec2f& u2, Ray& ray,
+	Spectrum DiffuseAreaLight::sample_Le(const Vec2f& u1, const Vec2f& u2, Ray& ray,
 		Vec3f& nLight, Float& pdfPos, Float& pdfDir) const
 	{
 		// Sample a point on the area light's _Shape_, _pShape_
@@ -167,7 +167,7 @@ namespace RT
 		return L(pShape, w);
 	}
 
-	void ADiffuseAreaLight::pdf_Le(const Ray& ray, const Vec3f& n, Float& pdfPos, Float& pdfDir) const
+	void DiffuseAreaLight::pdf_Le(const Ray& ray, const Vec3f& n, Float& pdfPos, Float& pdfDir) const
 	{
 		Interaction it(ray.origin(), n, Vec3f(n));
 		pdfPos = m_shape->pdf(it);

@@ -2,19 +2,17 @@
 
 namespace RT
 {
-	void ABarrier::wait() 
+	void Barrier::wait() 
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 		if (--m_count == 0)
 		{
-			// This is the last thread to reach the barrier; wake up all of the
-			// other ones before exiting.
+			// 最后一个线程到达后唤醒所有线程
 			m_cv.notify_all();
 		}
 		else
 		{
-			// Otherwise there are still threads that haven't reached it. Give
-			// up the lock and wait to be notified.
+			// 还有线程未到达等待其他线程
 			m_cv.wait(lock, [this] { return m_count == 0; });
 		}
 	}

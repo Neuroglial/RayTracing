@@ -1,5 +1,4 @@
-#ifndef ARSCENE_H
-#define ARSCENE_H
+#pragma once
 
 #include "Utils/Base.h"
 #include "Utils/Math.h"
@@ -24,7 +23,7 @@ namespace RT
 			for (const auto &light : lights)
 			{
 				light->preprocess(*this);
-				if (light->m_flags & (int)ALightFlags::ALightInfinite)
+				if (light->m_flags & (int)LightFlags::LightInfinite)
 					m_infiniteLights.push_back(light);
 			}
 		}
@@ -36,8 +35,7 @@ namespace RT
 		bool hitTr(Ray ray, Sampler &sampler, SurfaceInteraction &isect, Spectrum &transmittance) const;
 
 		std::vector<Light::ptr> m_lights;
-		// Store infinite light sources separately for cases where we only want
-		// to loop over them.
+		// 
 		std::vector<Light::ptr> m_infiniteLights;
 
 	private:
@@ -47,5 +45,3 @@ namespace RT
 		std::vector<Entity::ptr> m_entities;
 	};
 }
-
-#endif

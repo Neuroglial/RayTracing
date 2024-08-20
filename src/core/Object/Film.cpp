@@ -32,14 +32,14 @@ namespace RT
 		//Filter
 		{
 			const auto &filterNode = node.getPropertyChild("Filter");
-			m_filter = std::unique_ptr<AFilter>(static_cast<AFilter*>(ObjectFactory::createInstance(
+			m_filter = std::unique_ptr<Filter>(static_cast<Filter*>(ObjectFactory::createInstance(
 				filterNode.getTypeName(), filterNode)));
 		}
 
 		activate();
 	}
 
-	Film::Film(const Vec2i &resolution, const BBox2f &cropWindow, std::unique_ptr<AFilter> filter,
+	Film::Film(const Vec2i &resolution, const BBox2f &cropWindow, std::unique_ptr<Filter> filter,
 		const std::string &filename, Float diagonal, Float scale, Float maxSampleLuminance)
 		: m_resolution(resolution), m_filter(std::move(filter)), m_diagonal(diagonal),
 		 m_filename(filename), m_scale(scale), m_maxSampleLuminance(maxSampleLuminance)
@@ -60,11 +60,9 @@ namespace RT
 
 	void Film::initialize()
 	{
-		m_pixels = std::unique_ptr<APixel[]>(new APixel[m_croppedPixelBounds.area()]);
+		m_pixels = std::unique_ptr<Pixel[]>(new Pixel[m_croppedPixelBounds.area()]);
 
-		//Precompute filter weight table
-		//Note: we assume that filtering function f(x,y)=f(|x|,|y|)
-		//      hence only store values for the positive quadrant of filter offsets.
+		//预计算过滤器重量表注意：我们假设滤波函数f（x，y） = f（ | x | ， | y | ），因此只存储滤波器偏移正象限的值
 		int offset = 0;
 		for (int y = 0; y < filterTableWidth; ++y)
 		{
@@ -103,8 +101,8 @@ namespace RT
 		for (Vec2i pixel : tile->getPixelBounds()) 
 		{
 			// Merge _pixel_ into _Film::pixels_
-			const AFilmTilePixel &tilePixel = tile->getPixel(pixel);
-			APixel &mergePixel = getPixel(pixel);
+			const FilmTilePixel &tilePixel = tile->getPixel(pixel);
+			Pixel &mergePixel = getPixel(pixel);
 			Float xyz[3];
 			tilePixel.m_contribSum.toXYZ(xyz);
 			for (int i = 0; i < 3; ++i)
@@ -124,7 +122,7 @@ namespace RT
 		for (Vec2i p : m_croppedPixelBounds) 
 		{
 			// Convert pixel XYZ color to RGB
-			APixel &pixel = getPixel(p);
+			Pixel &pixel = getPixel(p);
 			XYZToRGB(pixel.m_xyz, &rgb[3 * offset]);
 
 			// Normalize pixel with weight sum
@@ -173,7 +171,7 @@ namespace RT
 		int nPixels = m_croppedPixelBounds.area();
 		for (int i = 0; i < nPixels; ++i) 
 		{
-			APixel &p = m_pixels[i];
+			Pixel &p = m_pixels[i];
 			img[i].toXYZ(p.m_xyz);
 			p.m_filterWeightSum = 1;
 			p.m_splatXYZ[0] = p.m_splatXYZ[1] = p.m_splatXYZ[2] = 0;
@@ -182,8 +180,7 @@ namespace RT
 
 	void Film::addSplat(const Vec2f &p, Spectrum v)
 	{
-		//Note:Rather than computing the final pixel value as a weighted
-		//     average of contributing splats, splats are simply summed.
+		
 
 		if (v.hasNaNs()) 
 		{
@@ -191,13 +188,13 @@ namespace RT
 				"at (%f, %f)", p.x, p.y);
 			return;
 		}
-		else if (v.y() < 0.) 
+		else if (v.luminance() < 0.) 
 		{
 			LOG(ERROR) << stringPrintf("Ignoring splatted spectrum with negative "
-				"luminance %f at (%f, %f)", v.y(), p.x, p.y);
+				"luminance %f at (%f, %f)", v.luminance(), p.x, p.y);
 			return;
 		}
-		else if (glm::isinf(v.y())) 
+		else if (glm::isinf(v.luminance())) 
 		{
 			LOG(ERROR) << stringPrintf("Ignoring splatted spectrum with infinite "
 				"luminance at (%f, %f)", p.x, p.y);
@@ -208,15 +205,16 @@ namespace RT
 		if (!insideExclusive(pi, m_croppedPixelBounds)) 
 			return;
 
-		if (v.y() > m_maxSampleLuminance)
+		//限制亮度
+		if (v.luminance() > m_maxSampleLuminance)
 		{
-			v *= m_maxSampleLuminance / v.y();
+			v *= m_maxSampleLuminance / v.luminance();
 		}
 
 		Float xyz[3];
 		v.toXYZ(xyz);
 
-		APixel &pixel = getPixel(pi);
+		Pixel &pixel = getPixel(pi);
 		for (int i = 0; i < 3; ++i)
 		{
 			pixel.m_splatXYZ[i].add(xyz[i]);
@@ -227,7 +225,7 @@ namespace RT
 	{
 		for (Vec2i p : m_croppedPixelBounds) 
 		{
-			APixel &pixel = getPixel(p);
+			Pixel &pixel = getPixel(p);
 			for (int c = 0; c < 3; ++c)
 			{
 				pixel.m_splatXYZ[c] = pixel.m_xyz[c] = 0;

@@ -26,7 +26,7 @@ namespace RT
 		const std::vector<Hitable::ptr>& getHitables() const { return m_hitables; }
 
 		virtual std::string toString() const override { return "Entity[]"; }
-		virtual AClassType getClassType() const override { return AClassType::AEHitable; }
+		virtual ClassType getClassType() const override { return ClassType::AEHitable; }
 
 	protected:
 		Material::ptr m_material;

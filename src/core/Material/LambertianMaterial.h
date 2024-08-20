@@ -4,16 +4,16 @@
 
 namespace RT
 {
-	class ALambertianMaterial final : public Material
+	class LambertianMaterial final : public Material
 	{
 	public:
-		typedef std::shared_ptr<ALambertianMaterial> ptr;
+		typedef std::shared_ptr<LambertianMaterial> ptr;
 
-		ALambertianMaterial(const PropertyTreeNode &node);
-		ALambertianMaterial(const Spectrum &r) : m_Kr(r) {}
+		LambertianMaterial(const PropertyTreeNode &node);
+		LambertianMaterial(const Spectrum &r) : m_Kr(r) {}
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const override;
+			TransportMode mode, bool allowMultipleLobes) const override;
 
 		virtual std::string toString() const override { return "LambertianMaterial[]"; }
 

@@ -283,7 +283,8 @@ namespace RT
 			return r;
 		}
 
-		Float y() const
+		//º∆À„¡¡∂»
+		Float luminance() const
 		{
 			const Float YWeight[3] = { 0.212671f, 0.715160f, 0.072169f };
 			return YWeight[0] * c[0] + YWeight[1] * c[1] + YWeight[2] * c[2];

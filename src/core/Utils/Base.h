@@ -100,7 +100,7 @@ namespace RT
 	using Spectrum = RGBSpectrum;
 
 	// TransportMode Declarations
-	enum class ATransportMode { aRadiance, aImportance };
+	enum class TransportMode { Radiance, Importance };
 
 	inline uint32_t floatToBits(float f) 
 	{

@@ -16,18 +16,21 @@ namespace RT
 		Interaction(const Vec3f &p, const Vec3f &n, const Vec3f &wo)
 			: p(p), wo(normalize(wo)), n(n) {}
 
+		//从碰撞点发出与d同向光线
 		inline Ray spawnRay(const Vec3f &d) const
 		{
 			Vec3f o = p;
 			return Ray(o, d, Infinity);
 		}
 
+		//从碰撞点发出与到p点的光线
 		inline Ray spawnRayTo(const Vec3f &p2) const
 		{
 			Vec3f origin = p;
 			return Ray(origin, p2 - p, 1 - ShadowEpsilon);
 		}
 
+		// 从碰撞点发出与到另一个碰撞点点的光线
 		inline Ray spawnRayTo(const Interaction &it) const
 		{
 			Vec3f origin = p;
@@ -53,7 +56,7 @@ namespace RT
 		Spectrum Le(const Vec3f &w) const;
 
 		void computeScatteringFunctions(const Ray &ray, MemoryArena &arena,
-			bool allowMultipleLobes = false, ATransportMode mode = ATransportMode::aRadiance);
+			bool allowMultipleLobes = false, TransportMode mode = TransportMode::Radiance);
 
 	public:
 		Vec2f uv;

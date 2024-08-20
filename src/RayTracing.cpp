@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 	CHECK_NE(scene, nullptr);
 	CHECK_NE(Renderer, nullptr);
 
+	//äÖÈ¾
 	Renderer->preprocess(*scene);
 	Renderer->render(*scene);
 	

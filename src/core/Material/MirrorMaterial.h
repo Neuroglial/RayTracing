@@ -5,16 +5,16 @@
 
 namespace RT
 {
-	class AMirrorMaterial final : public Material
+	class MirrorMaterial final : public Material
 	{
 	public:
-		typedef std::shared_ptr<AMirrorMaterial> ptr;
+		typedef std::shared_ptr<MirrorMaterial> ptr;
 
-		AMirrorMaterial(const PropertyTreeNode &node);
-		AMirrorMaterial(const Spectrum &r) : m_Kr(r) {}
+		MirrorMaterial(const PropertyTreeNode &node);
+		MirrorMaterial(const Spectrum &r) : m_Kr(r) {}
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const override;
+			TransportMode mode, bool allowMultipleLobes) const override;
 
 		virtual std::string toString() const override { return "MirrorMaterial[]"; }
 

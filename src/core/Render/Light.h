@@ -10,18 +10,18 @@
 
 namespace RT
 {
-	enum class ALightFlags : int
+	enum class LightFlags : int
 	{
 		ALightDeltaPosition = 1,
 		ALightDeltaDirection = 2,
 		ALightArea = 4,
-		ALightInfinite = 8
+		LightInfinite = 8
 	};
 
 	inline bool isDeltaLight(int flags)
 	{
-		return flags & (int)ALightFlags::ALightDeltaPosition 
-			|| flags & (int)ALightFlags::ALightDeltaDirection;
+		return flags & (int)LightFlags::ALightDeltaPosition 
+			|| flags & (int)LightFlags::ALightDeltaDirection;
 	}
 
 	class Light : public Object
@@ -51,7 +51,7 @@ namespace RT
 
 		virtual void pdf_Le(const Ray &, const Vec3f &, Float &pdfPos, Float &pdfDir) const = 0;
 
-		virtual AClassType getClassType() const override { return AClassType::AELight; }
+		virtual ClassType getClassType() const override { return ClassType::AELight; }
 
 		int m_flags;
 		int m_nSamples;
@@ -92,14 +92,14 @@ namespace RT
 
 namespace RT
 {
-	class ADiffuseAreaLight final : public AreaLight
+	class DiffuseAreaLight final : public AreaLight
 	{
 	public:
-		typedef std::shared_ptr<ADiffuseAreaLight> ptr;
+		typedef std::shared_ptr<DiffuseAreaLight> ptr;
 
-		ADiffuseAreaLight(const PropertyTreeNode& node);
+		DiffuseAreaLight(const PropertyTreeNode& node);
 
-		ADiffuseAreaLight(const Transform& lightToWorld, const Spectrum& Le, int nSamples,
+		DiffuseAreaLight(const Transform& lightToWorld, const Spectrum& Le, int nSamples,
 			Shape* shape, bool twoSided = false);
 
 		virtual Spectrum L(const Interaction& intr, const Vec3f& w) const override
@@ -127,9 +127,7 @@ namespace RT
 
 		Spectrum m_Lemit;
 		Shape* m_shape;
-		// Added after book publication: by default, DiffuseAreaLights still
-		// only emit in the hemimsphere around the surface normal.  However,
-		// this behavior can now be overridden to give emission on both sides.
+		// 是否为双面光源
 		bool m_twoSided;
 		Float m_area;
 	};

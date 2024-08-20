@@ -5,9 +5,9 @@
 
 namespace RT
 {
-	AURORA_REGISTER_CLASS(AMirrorMaterial, "Mirror")
+	AURORA_REGISTER_CLASS(MirrorMaterial, "Mirror")
 
-	AMirrorMaterial::AMirrorMaterial(const PropertyTreeNode &node)
+	MirrorMaterial::MirrorMaterial(const PropertyTreeNode &node)
 	{
 		const auto &props = node.getPropertyList();
 		Vec3f _kr = props.getVector3f("R");
@@ -16,8 +16,8 @@ namespace RT
 		activate();
 	}
 
-	void AMirrorMaterial::computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
-		ATransportMode mode, bool allowMultipleLobes) const
+	void MirrorMaterial::computeScatteringFunctions(SurfaceInteraction &si, MemoryArena &arena,
+		TransportMode mode, bool allowMultipleLobes) const
 	{
 		si.bsdf = ARENA_ALLOC(arena, BSDF)(si);
 		Spectrum R = m_Kr;

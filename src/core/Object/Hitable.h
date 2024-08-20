@@ -26,9 +26,9 @@ namespace RT
 		virtual const Material *getMaterial() const = 0;
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &isect, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const = 0;
+			TransportMode mode, bool allowMultipleLobes) const = 0;
 
-		virtual AClassType getClassType() const override { return AClassType::AEHitable; }
+		virtual ClassType getClassType() const override { return ClassType::AEHitable; }
 
 	};
 
@@ -51,7 +51,7 @@ namespace RT
 		virtual const Material *getMaterial() const override;
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &isect, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const override;
+			TransportMode mode, bool allowMultipleLobes) const override;
 
 		virtual std::string toString() const override { return "HitableObject[]"; }
 
@@ -70,7 +70,7 @@ namespace RT
 		virtual const Material *getMaterial() const override;
 
 		virtual void computeScatteringFunctions(SurfaceInteraction &isect, MemoryArena &arena,
-			ATransportMode mode, bool allowMultipleLobes) const override;
+			TransportMode mode, bool allowMultipleLobes) const override;
 
 	};
 }

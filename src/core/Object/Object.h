@@ -168,7 +168,7 @@ namespace RT
 	{
 	public:
 
-		enum AClassType
+		enum ClassType
 		{
 			AEHitable = 0,
 			AEShape,
@@ -177,7 +177,7 @@ namespace RT
 			AECamera,
 			AERenderer,
 			AESampler,
-			AEFilter,
+			RTFilter,
 			AEFilm,
 			AEEntity,
 			EClassTypeCount
@@ -185,7 +185,7 @@ namespace RT
 
 		virtual ~Object() = default;
 
-		virtual AClassType getClassType() const = 0;
+		virtual ClassType getClassType() const = 0;
 
 		/**
 		 * \brief Add a child object to the current instance
@@ -221,7 +221,7 @@ namespace RT
 		virtual std::string toString() const = 0;
 
 		// Turn a class type into a human-readable string
-		static std::string getClassTypeName(AClassType type) 
+		static std::string getClassTypeName(ClassType type) 
 		{
 			switch (type) 
 			{
@@ -232,7 +232,7 @@ namespace RT
 				case AECamera:	   return "Camera";
 				case AERenderer:   return "Renderer";
 				case AESampler:	   return "Sampler";
-				case AEFilter:     return "Filter";
+				case RTFilter:     return "Filter";
 				case AEFilm:       return "Film";
 				case AEEntity:	   return "Entity";
 				default:           return "Unknown";

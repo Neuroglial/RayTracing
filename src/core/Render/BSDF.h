@@ -117,11 +117,11 @@ namespace RT
 		virtual Spectrum evaluate(Float) const override { return Spectrum(1.); }
 	};
 
-	class ALambertianReflection : public BxDF
+	class LambertianReflection : public BxDF
 	{
 	public:
 		// LambertianReflection Public Methods
-		ALambertianReflection(const Spectrum &R)
+		LambertianReflection(const Spectrum &R)
 			: BxDF(ABxDFType(BSDF_REFLECTION | BSDF_DIFFUSE)), m_R(R) {}
 
 		virtual Spectrum f(const Vec3f &wo, const Vec3f &wi) const override;
@@ -157,7 +157,7 @@ namespace RT
 	{
 	public:
 		// SpecularTransmission Public Methods
-		ASpecularTransmission(const Spectrum &T, Float etaA, Float etaB, ATransportMode mode)
+		ASpecularTransmission(const Spectrum &T, Float etaA, Float etaB, TransportMode mode)
 			: BxDF(ABxDFType(BSDF_TRANSMISSION | BSDF_SPECULAR)), m_T(T), m_etaA(etaA),
 			m_etaB(etaB), m_fresnel(etaA, etaB), m_mode(mode) {}
 
@@ -172,7 +172,7 @@ namespace RT
 		const Spectrum m_T;
 		const Float m_etaA, m_etaB;
 		const AFresnelDielectric m_fresnel;
-		const ATransportMode m_mode;
+		const TransportMode m_mode;
 	};
 
 }

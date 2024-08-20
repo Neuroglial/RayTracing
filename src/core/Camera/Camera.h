@@ -36,7 +36,7 @@ namespace RT
 		//virtual Spectrum Sample_Wi(const Interaction &ref, const APoint2f &u,
 		//	Vec3f *wi, Float *pdf, APoint2f *pRaster, VisibilityTester *vis) const;
 
-		virtual AClassType getClassType() const override { return AClassType::AECamera; }
+		virtual ClassType getClassType() const override { return ClassType::AECamera; }
 
 		// Camera Public Data
 		Transform m_cameraToWorld;

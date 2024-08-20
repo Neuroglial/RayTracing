@@ -20,7 +20,7 @@ namespace RT
 		virtual void preprocess(const Scene &scene) = 0;
 		virtual void render(const Scene &scene) = 0;
 
-		virtual AClassType getClassType() const override { return AClassType::AERenderer; }
+		virtual ClassType getClassType() const override { return ClassType::AERenderer; }
 
 	};
 
@@ -84,7 +84,7 @@ namespace RT
 		int m_maxDepth;
 		Float m_rrThreshold;
 		std::string m_lightSampleStrategy;
-		std::unique_ptr<ALightDistribution> m_lightDistribution;
+		std::unique_ptr<LightDistribution> m_lightDistribution;
 	};
 
 }

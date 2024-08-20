@@ -67,7 +67,7 @@ namespace RT
 
 		int sampleDiscrete(Float u, Float *pdf = nullptr, Float *uRemapped = nullptr) const 
 		{
-			// Find surrounding CDF segments and _offset_
+			// 查找周围的CDF段和offset
 			int offset = findInterval((int)cdf.size(), [&](int index) 
 			{ 
 				return cdf[index] <= u; 
@@ -93,22 +93,21 @@ namespace RT
 	};
 
 	// LightDistribution为类定义了一个通用接口，这些类为在空间中的给定点对光源进行采样提供概率分布
-	class ALightDistribution 
+	class LightDistribution 
 	{
 	public:
-		virtual ~ALightDistribution() = default;
+		virtual ~LightDistribution() = default;
 
-		// Given a point |p| in space, this method returns a (hopefully
-		// effective) sampling distribution for light sources at that point.
+		//给定空间中的一个点|p|，此方法返回该点光源的采样分布
 		virtual const Distribution1D *lookup(const Vec3f &p) const = 0;
 	};
 
 	// LightDistribution最简单的可能实现：忽略提供的点，在所有光源上返回均匀分布。这种方法适用于非常简单的场景，但对于具有多个光源的场景则效果不佳。
-	class AUniformLightDistribution : public ALightDistribution 
+	class UniformLightDistribution : public LightDistribution 
 	{
 	public:
 		
-		AUniformLightDistribution(const Scene &scene);
+		UniformLightDistribution(const Scene &scene);
 
 		virtual const Distribution1D *lookup(const Vec3f &p) const override;
 
@@ -116,7 +115,7 @@ namespace RT
 		std::unique_ptr<Distribution1D> distrib;
 	};
 
-	std::unique_ptr<ALightDistribution> createLightSampleDistribution(
+	std::unique_ptr<LightDistribution> createLightSampleDistribution(
 		const std::string &name, const Scene &scene);
 
 }

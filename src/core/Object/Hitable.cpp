@@ -30,7 +30,7 @@ namespace RT
 	}
 
 	void HitableObject::computeScatteringFunctions(SurfaceInteraction &isect, MemoryArena &arena,
-		ATransportMode mode, bool allowMultipleLobes) const
+		TransportMode mode, bool allowMultipleLobes) const
 	{
 		if (m_material != nullptr)
 		{
@@ -53,7 +53,7 @@ namespace RT
 	const Material *HitableAggregate::getMaterial() const { return nullptr; }
 
 	void HitableAggregate::computeScatteringFunctions(SurfaceInteraction &isect, MemoryArena &arena,
-		ATransportMode mode, bool allowMultipleLobes) const
+		TransportMode mode, bool allowMultipleLobes) const
 	{
 		//Note: should not go here at all.
 		LOG(FATAL) <<

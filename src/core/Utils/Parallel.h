@@ -46,19 +46,13 @@ namespace RT
 #endif
 	};
 
-	// Simple one-use barrier; ensures that multiple threads all reach a
-	// particular point of execution before allowing any of them to proceed
-	// past it.
-	//
-	// Note: this should be heap allocated and managed with a shared_ptr, where
-	// all threads that use it are passed the shared_ptr. This ensures that
-	// memory for the Barrier won't be freed until all threads have
-	// successfully cleared it.
-	class ABarrier 
+	// 简单的一次性屏障；确保多个线程在允许任何线程通过特定执行点之前都到达该执行点。
+	// 注意：这应该通过shared_ptr进行堆分配和管理，其中所有使用它的线程都会被传递shared_ptr。这确保了在所有线程成功清除屏障之前，屏障的内存不会被释放。
+	class Barrier 
 	{
 	public:
-		ABarrier(int count) : m_count(count) { CHECK_GT(count, 0); }
-		~ABarrier() { CHECK_EQ(m_count, 0); }
+		Barrier(int count) : m_count(count) { CHECK_GT(count, 0); }
+		~Barrier() { CHECK_EQ(m_count, 0); }
 		void wait();
 
 	private:
@@ -68,23 +62,23 @@ namespace RT
 	};
 
 	//Execution policy tag.
-	enum class AExecutionPolicy { ASERIAL, APARALLEL };
+	enum class ExecutionPolicy { ASERIAL, APARALLEL };
 
 	inline int numSystemCores() { return glm::max(1u, std::thread::hardware_concurrency()); }
 
-	class AParallelUtils
+	class ParallelUtils
 	{
 	public:
 		
 		//Parallel loop for parallel tiling rendering
 		template <typename Function>
-		static void parallelFor(size_t start, size_t end, const Function& func, AExecutionPolicy policy)
+		static void parallelFor(size_t start, size_t end, const Function& func, ExecutionPolicy policy)
 		{
 			if (start > end)
 				return;
-			if (policy == AExecutionPolicy::APARALLEL)
+			if (policy == ExecutionPolicy::APARALLEL)
 			{
-				AParallelUtils::parallel_for_seize(start, end, func);
+				ParallelUtils::parallel_for_seize(start, end, func);
 			}
 			else
 			{

@@ -15,6 +15,8 @@ namespace RT
 	CameraSample Sampler::getCameraSample(const Vec2i &pRaster)
 	{
 		CameraSample cs;
+
+		//当前像素加上随机偏移
 		cs.pFilm = (Vec2f)pRaster + get2D();
 		return cs;
 	}
@@ -151,16 +153,18 @@ namespace RT
 {
 	AURORA_REGISTER_CLASS(ARandomSampler, "Random")
 
-		ARandomSampler::ARandomSampler(const PropertyTreeNode& node) : Sampler(node.getPropertyList()), m_rng(0) { activate(); }
+	ARandomSampler::ARandomSampler(const PropertyTreeNode& node) : Sampler(node.getPropertyList()), m_rng(0) { activate(); }
 
 	ARandomSampler::ARandomSampler(int ns, int seed) : Sampler(ns), m_rng(seed) {}
 
+	//获取一个随机数 [0，1)
 	Float ARandomSampler::get1D()
 	{
 		CHECK_LT(m_currentPixelSampleIndex, samplesPerPixel);
 		return m_rng.uniformFloat();
 	}
 
+	//获取一个随机向量 [0，1)
 	Vec2f ARandomSampler::get2D()
 	{
 		CHECK_LT(m_currentPixelSampleIndex, samplesPerPixel);

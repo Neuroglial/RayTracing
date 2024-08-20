@@ -181,7 +181,7 @@ namespace RT
 
 	//-------------------------------------------ALambertianReflection-------------------------------------
 
-	Spectrum ALambertianReflection::f(const Vec3f &wo, const Vec3f &wi) const
+	Spectrum LambertianReflection::f(const Vec3f &wo, const Vec3f &wi) const
 	{
 		return m_R * InvPi;
 	}
@@ -214,7 +214,7 @@ namespace RT
 		Spectrum ft = m_T * (Spectrum(1.) - m_fresnel.evaluate(wi.z));
 
 		// Account for non-symmetry with transmission to different medium
-		if (m_mode == ATransportMode::aRadiance)
+		if (m_mode == TransportMode::Radiance)
 			ft *= (etaI * etaI) / (etaT * etaT);
 		return ft / glm::abs(wi.z);
 	}
